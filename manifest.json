@@ -6,10 +6,12 @@
     "description": "",
     "version": "1.0.0",
     "author": "JENTIS GmbH",
-    "publishdate": "08.05.2021"
+    "publishdate": "08.05.2021",
+    "url": "https://www.jentis.com"
   },
   "plugin": {
     "plugin-slot": "jentis.core.cmp.plugin.addconsentbar"
   },
-  "value": "(!code:start)(!include:/JentisConsentEngine.js)(!code:end)"
+  "js": "(!code:start)(!include:/JentisConsentEngine.js)(!code:end)",
+  "css": "(!code:start)(!code:end)"
 }
