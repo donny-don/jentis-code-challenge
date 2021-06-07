@@ -11,5 +11,5 @@
   "plugin": {
     "plugin-slot": "jentis.core.cmp.plugin.addconsentengine"
   },
-  "value": "(!code:start)(!include:/JentisConsentEngine.js)(!code:end)",
+  "value": "(!code:start)(!include:/JentisConsentEngine.js)(!code:end)"
 }
