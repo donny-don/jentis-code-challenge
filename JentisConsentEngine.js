@@ -192,6 +192,15 @@ window.jentis.consent.engine = new function ()
 
 		}
 		
+		
+		//Check if * vendor and specific vendors are part of sStorage. If so: delete the * vendor
+		if(Object.keys(aStorage).length > 1 && typeof aStorage["*"] !== "undefined")
+		{
+			delete aStorage["*"];
+			this.bWriteStorage = true;
+		}
+		
+		
 		//Initial we have to write the storage situation, because at init no change event should fired.
 		this.aInitStorage = this.copyObject(aStorage);						
 		
@@ -346,9 +355,12 @@ window.jentis.consent.engine = new function ()
 			}
 			
 		}
-
+		
 	}
 
+
+	
+	
 	//*************************
 	//*************************
 	//PUBLIC GET FUNCTION
