@@ -24,8 +24,37 @@ window.jentis.consent.engine = new function ()
 
 		if(typeof window.jentis.consent.config !== "undefined")
 		{
+			
+			if(Object.keys(window.jentis.consent.config.vendors).length === 0)
+			{
+				window.jentis.consent.config.vendors = {
+						"*" : {
+							"vendor" : {
+								"id"      : "*",
+								"name"    : "",
+								"street"  : "",
+								"zip"     : "",
+								"country" : {
+									"iso"   : "-",
+									"name"  : ""
+								}
+							},
+							"purpose" : {
+								"id"    : "other",
+								"name"  : "Other"
+							},
+							"justification" : {
+								"id"    : "other",
+								"name"  : "other"
+							},
+							"deniable"	: false,
+							"description" : ""
+						}
+					};		
+			}			
+			
 			this.oLocalConfData = window.jentis.consent.config;
-		}
+		}			
 		else
 		{
 			console.log("jentis.consent.engine config not found - fallback config");
