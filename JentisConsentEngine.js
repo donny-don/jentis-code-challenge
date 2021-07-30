@@ -104,6 +104,7 @@ window.jentis.consent.engine = new function ()
 		this.aInitStorage 		= {};				//List of bools for each pixel (Status since the last save action)
 
 		this.bStartTrack			= null;				//Current Status if allready started to track.
+		this.bIsLocalStorageAvailable = this.checkLocalStorage();	// Check if LocalStorage is available
 
 		//Check if we are within a iframe
 		this.bIframe = window.self !== window.top;
@@ -122,7 +123,18 @@ window.jentis.consent.engine = new function ()
 	//HELPER FUNCTION FOR INIT
 	//*************************
 	//*************************
-	
+
+	this.checkLocalStorage = function() {
+		var test = 'test';
+		try {
+			localStorage.setItem(test, test);
+			localStorage.removeItem(test);
+			return true;
+		} catch(e) {
+			return false;
+		}
+	}
+
 	/**
 	* Checks if we want to start tracking. If the consentbar is currently showen, then we do not start tracking.
 	* If we have at least one positive consent, then we start tracking.
@@ -319,7 +331,7 @@ window.jentis.consent.engine = new function ()
 	this.readStorage = function ()
 	{
 		//Get the data from the local storage.
-		if(typeof localStorage !== "undefined")
+		if(window.jentis.consent.engine.bIsLocalStorageAvailable === true)
 		{
 			var aData = JSON.parse(localStorage.getItem("jentis.consent.data"));
 		}
@@ -798,7 +810,7 @@ window.jentis.consent.engine = new function ()
 		}		
 
 		//Now write it to the local storage
-		if(typeof localStorage !== "undefined")
+		if(window.jentis.consent.engine.bIsLocalStorageAvailable === true)
 		{		
 			localStorage.setItem("jentis.consent.data", JSON.stringify(aData));
 		}	
