@@ -171,16 +171,16 @@ window.jentis.consent.engine = new function ()
 			}
 		}		
 		
-		if(bTrack === true && this.bstartTrack !== true)
+		if(bTrack === true && this.bStartTrack !== true)
 		{
 			this.setEvent("minimal-consent-given");			
 		}
-		else if(bTrack === false && this.bstartTrack !== false)
+		else if(bTrack === false && this.bStartTrack !== false)
 		{
 			this.setEvent("no-consent-given");						
 		}
 		
-		this.bstartTrack = bTrack;
+		this.bStartTrack = bTrack;
 	}
 	
 	
