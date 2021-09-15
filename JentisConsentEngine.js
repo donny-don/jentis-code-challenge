@@ -230,7 +230,7 @@ window.jentis.consent.engine = new function () {
             this.writeStorage(aStorage, bSendConsent, false, false, bFromUser);
         }
 
-        window.jentis.consent.engine.setEvent("init");
+        window.jentis.helper.setEvent("init");
 
     }
 
@@ -716,6 +716,13 @@ window.jentis.consent.engine = new function () {
         return oNewObj;
     }
 
+    /**
+     * FALLBACK FUNCTIONS TO HELPER
+     */
+
+    this.addEventListener = function (sName, cb) {
+        window.jentis.helper.addEventListener(sName, cb);
+    }
 
 };
 
