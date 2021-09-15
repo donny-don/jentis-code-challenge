@@ -98,7 +98,7 @@ window.jentis.consent.engine = new function () {
         this.aInitStorage = {};				//List of bools for each pixel (Status since the last save action)
 
         this.bStartTrack = null;				//Current Status if allready started to track.
-        this.bIsLocalStorageAvailable = this.checkLocalStorage();	// Check if LocalStorage is available
+
 
         //Check if we are within a iframe
         this.bIframe = window.self !== window.top;
@@ -117,17 +117,6 @@ window.jentis.consent.engine = new function () {
     //HELPER FUNCTION FOR INIT
     //*************************
     //*************************
-
-    this.checkLocalStorage = function () {
-        var test = 'test';
-        try {
-            localStorage.setItem(test, test);
-            localStorage.removeItem(test);
-            return true;
-        } catch (e) {
-            return false;
-        }
-    }
 
     /**
      * Checks if we want to start tracking. If the consentbar is currently showen, then we do not start tracking.
@@ -158,9 +147,9 @@ window.jentis.consent.engine = new function () {
         }
 
         if (bTrack === true && this.bStartTrack !== true) {
-            this.setEvent("minimal-consent-given");
+            window.jentis.helper.setEvent("jentis.consent.engine", "minimal-consent-given");
         } else if (bTrack === false && this.bStartTrack !== false) {
-            this.setEvent("no-consent-given");
+            window.jentis.helper.setEvent("jentis.consent.engine", "no-consent-given");
         }
 
         this.bStartTrack = bTrack;
@@ -253,24 +242,24 @@ window.jentis.consent.engine = new function () {
     this.checkifBarShow = function () {
         if (Object.keys(this.aStorage).length === 0 || this.sConsentId === false) {
             //No consent is stored
-            this.setEvent("show-bar");
+            window.jentis.helper.setEvent("jentis.consent.engine", "show-bar");
             return true;
         } else {
             if (this.bUserConsent === false) {
                 //The given consent was not set by the user, so show the consentbar again.
-                this.setEvent("show-bar");
+                window.jentis.helper.setEvent("jentis.consent.engine", "show-bar");
                 return true;
             }
 
             if (this.bNewVendorConsent === true) {
                 //At least one new tool is added to the vendor consent list, so ask for consent again.
-                this.setEvent("show-bar");
+                window.jentis.helper.setEvent("jentis.consent.engine", "show-bar");
                 return true;
             }
 
             if (this.iLastUpdate === false || (typeof this.oLocalConfData.timeoutBarShow !== "undefined" && this.oLocalConfData.timeoutBarShow !== false && this.iLastUpdate + this.oLocalConfData.timeoutBarShow < Date.now())) {
                 //Max Time of consent storage is over, so we have to ask again.
-                this.setEvent("show-bar");
+                window.jentis.helper.setEvent("jentis.consent.engine", "show-bar");
                 return true;
 
             } else {
@@ -287,10 +276,26 @@ window.jentis.consent.engine = new function () {
      */
     this.readStorage = function () {
         //Get the data from the local storage.
-        if (window.jentis.consent.engine.bIsLocalStorageAvailable === true) {
-            var aData = JSON.parse(localStorage.getItem("jentis.consent.data"));
+        var aData = null;
+        var cookiedata = window.jentis.helper.readCookie("jts_cmp");
+        if (window.jentis.helper.bIsLocalStorageAvailable === true) {
+            if (cookiedata !== null) {
+                // If a Cookie is existing, store it into the storage
+                aData = JSON.parse(cookiedata);
+
+                window.jentis.helper.setCookie({
+                    "name": "jts_cmp",
+                    "value": "",
+                    "exdays": -1,
+                    "sameSite": "Strict"
+                });
+            } else {
+                aData = JSON.parse(window.localStorage.getItem("jentis.consent.data"));
+            }
         } else {
-            var aData = null;
+            if (cookiedata !== null) {
+                aData = JSON.parse(cookiedata);
+            }
         }
 
         if (aData === null) {
@@ -478,7 +483,7 @@ window.jentis.consent.engine = new function () {
      */
     this.userShowSettings = function () {
         //Just throw the event so others can show the setting panel.
-        this.setEvent("user-show-settings");
+        window.jentis.helper.setEvent("jentis.consent.engine", "user-show-settings");
     }
 
 
@@ -496,15 +501,7 @@ window.jentis.consent.engine = new function () {
      *@param function cb The callback which should be called when the event is called.
      */
     this.addEventListener = function (sName, cb) {
-        if (typeof this.aEventCache[sName] !== "undefined") {
-            for (var i = 0; i < this.aEventCache[sName].length; i++) {
-                cb({"detail": this.aEventCache[sName][i]});
-            }
-        }
-
-        document.addEventListener(sName, function (e) {
-            cb(e);
-        });
+        window.jentis.helper.addEventListener(sName, cb);
     }
 
     /**
@@ -517,7 +514,7 @@ window.jentis.consent.engine = new function () {
         (function (oMe) {
             document.addEventListener('jentis.consent.engine.setNewVendorConsents', function (e) {
                 oMe.setNewVendorConsents(e.details.vendors);
-                oMe.setEvent("external-NewVendorData");
+                window.jentis.helper.setEvent("jentis.consent.engine", "external-NewVendorData");
 
 
             }, false);
@@ -529,7 +526,7 @@ window.jentis.consent.engine = new function () {
         (function (oMe) {
             document.addEventListener('jentis.consent.engine.DenyAll', function (e) {
                 oMe.alldeny();
-                oMe.setEvent("external-DenyAll");
+                window.jentis.helper.setEvent("jentis.consent.engine", "external-DenyAll");
 
             }, false);
 
@@ -539,7 +536,7 @@ window.jentis.consent.engine = new function () {
         (function (oMe) {
             document.addEventListener('jentis.consent.engine.AcceptAll', function (e) {
                 oMe.allagree();
-                oMe.setEvent("external-AcceptAll");
+                window.jentis.helper.setEvent("jentis.consent.engine", "external-AcceptAll");
 
             }, false);
 
@@ -548,41 +545,6 @@ window.jentis.consent.engine = new function () {
 
     }
 
-
-    /**
-     * Set a event, store is to the event cache and triggers a global event.
-     *
-     *@param string sName The name of the event
-     *@param object oValue An object of additional data which should be passed with the event.
-     *
-     */
-    this.setEvent = function (sName, oValue) {
-        //Create the eventname
-        var eventname = "jentis.consent.engine." + sName;
-
-        //Fallback if no value is passed
-        if (typeof oValue === "undefined") {
-            var oValue = null;
-        }
-
-        //Now store the event to the event cache.
-        if (typeof this.aEventCache[eventname] === "undefined") {
-            this.aEventCache[eventname] = [];
-        }
-        this.aEventCache[eventname].push(oValue);
-
-        //Trigger the global event.
-        if (typeof window.CustomEvent === 'function') {
-            var oEvent = new CustomEvent(eventname, {"detail": oValue});
-        } else {
-            var oEvent = document.createEvent('CustomEvent');
-            oEvent.initCustomEvent(eventname, true, false, oValue);
-        }
-
-        // Dispatch the render event
-        document.dispatchEvent(oEvent);
-
-    }
 
     //*************************
     //*************************
@@ -622,13 +584,13 @@ window.jentis.consent.engine = new function () {
 
         if (aPosChange.length > 0) {
             //There are positive consent changes, now send the event
-            this.setEvent("vendor-add", aPosChange);
+            window.jentis.helper.setEvent("jentis.consent.engine", "vendor-add", aPosChange);
 
         }
 
         if (bChange === true) {
             //There are consent changes, so now send the regarding event.
-            this.setEvent("vendor-change", oData2Check);
+            window.jentis.helper.setEvent("jentis.consent.engine", "vendor-change", oData2Check);
         }
 
 
@@ -690,8 +652,15 @@ window.jentis.consent.engine = new function () {
         }
 
         //Now write it to the local storage
-        if (window.jentis.consent.engine.bIsLocalStorageAvailable === true) {
+        if (window.jentis.helper.bIsLocalStorageAvailable === true) {
             localStorage.setItem("jentis.consent.data", JSON.stringify(aData));
+        } else {
+            window.jentis.helper.setCookie({
+                "name": "jts_cmp",
+                "value": JSON.stringify(aData),
+                "exdays": 365,
+                "sameSite": "Strict"
+            });
         }
 
         //We want to have the new storage data even in the object storage variables
@@ -703,7 +672,7 @@ window.jentis.consent.engine = new function () {
 
         //Now we want to send it if wanted
         if (bSend === true) {
-            this.setEvent("send-consent-data", aData);
+            window.jentis.helper.setEvent("jentis.consent.engine", "send-consent-data", aData);
             //We can only set it to true. If send not wanted, may it is allready send to bSend is correctly mayba true.
             this.bSend = true;
         }
