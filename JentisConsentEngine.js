@@ -230,7 +230,7 @@ window.jentis.consent.engine = new function () {
             this.writeStorage(aStorage, bSendConsent, false, false, bFromUser);
         }
 
-        window.jentis.helper.setEvent("init");
+        window.jentis.helper.setEvent("jentis.consent.engine", "init");
 
     }
 
