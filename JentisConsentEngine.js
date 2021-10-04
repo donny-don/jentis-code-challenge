@@ -19,7 +19,13 @@ window.jentis.consent.engine = new function () {
      * While Loading we want to init all the consent and vendor status.
      */
     this.init = function () {
-
+		
+		//Because of ID changens at version 2 of JENTIS, we have to migrate old vendorIds.
+		this.vendorV2Migration = {
+			"jentis.core.jtm.plugin.backend.ga" : "googleanalytics"
+		}
+		
+		
         if (typeof window.jentis.consent.config !== "undefined") {
 
             if (Object.keys(window.jentis.consent.config.vendors).length === 0) {
@@ -319,6 +325,8 @@ window.jentis.consent.engine = new function () {
             //Set the initial storage to empty object to realize the different when we want to store the status.
             this.aInitStorage = {};
         } else {
+			
+			
             this.sConsentId = aData.consentid;
             this.iLastUpdate = aData.lastupdate;
             this.aStorage = aData.vendors;
@@ -331,6 +339,16 @@ window.jentis.consent.engine = new function () {
             ) {
                 this.aStorage = aData[this.oLocalConfData.backward.vendorduplicate];
             }
+
+			//V2 Migration of old vendorIDs.
+			for(var sOldVendorId in this.aStorage)
+			{
+				var sNewVendorId = this.vendorV2Migration[sOldVendorId];
+				if(typeof sNewVendorId !== "undefined")
+				{
+					this.aStorage[sNewVendorId] = this.aStorage[sOldVendorId];
+				}				
+			}			
 
             this.aInitStorage = this.copyObject(aData.vendors);
 
