@@ -22,9 +22,14 @@ window.jentis.consent.engine = new function () {
 		
 		//Because of ID changens at version 2 of JENTIS, we have to migrate old vendorIds.
 		this.vendorV2Migration = {
-			"jentis.core.jtm.plugin.backend.ga" : "googleanalytics"
-		}
-		
+			"adformDMP" : "adformdmp",
+			"ga" : "googleanalytics",
+			"fb" : "facebook",
+			"partnerizeservertoserver" : "partnerize",
+			"googleoptimize" : "googleopt",
+			"cjaffiliate" : "cj-affiliate",
+			"scrolltracker" : "scrolltracker"
+		};		
 		
         if (typeof window.jentis.consent.config !== "undefined") {
 
@@ -113,10 +118,22 @@ window.jentis.consent.engine = new function () {
         this.readStorage();
         this.init_eventlistener();
         this.init_consentStatus();
+		
         var bBarShow = this.checkifBarShow();
         this.startJentisTracking(bBarShow);
     }
 
+
+    //*************************
+    //*************************
+    //MIGRATION FUNCTION
+    //*************************
+    //*************************
+	this.updateVendorIdMappingTable = function(oMapping)
+	{
+		this.vendorV2Migration = oMapping;		
+		this.readStorage();
+	}
 
     //*************************
     //*************************
@@ -333,7 +350,7 @@ window.jentis.consent.engine = new function () {
             this.bUserConsent = aData.userconsent;
 
             //Backwards compatible
-            if (typeof this.aStorage === "undefined" &&
+            if (
                 typeof this.oLocalConfData.backward !== "undefined" &&
                 typeof this.oLocalConfData.backward.vendorduplicate !== "undefined"
             ) {
@@ -341,15 +358,36 @@ window.jentis.consent.engine = new function () {
             }
 
 			//V2 Migration of old vendorIDs.
+			var bV2Migration = false;
 			for(var sOldVendorId in this.aStorage)
 			{
 				var sNewVendorId = this.vendorV2Migration[sOldVendorId];
 				if(typeof sNewVendorId !== "undefined")
 				{
 					this.aStorage[sNewVendorId] = this.aStorage[sOldVendorId];
+					delete this.aStorage[sOldVendorId];
+					bV2Migration = true;
 				}				
-			}			
-
+			}	
+			
+			//If there is a new storage because of Migration, then strore it now even to the local storage.
+			if(bV2Migration)
+			{
+				aData.vendors = this.aStorage;
+				
+				//Backwards compatible
+				if (typeof this.aStorage === "undefined" &&
+					typeof this.oLocalConfData.backward !== "undefined" &&
+					typeof this.oLocalConfData.backward.vendorduplicate !== "undefined"
+				) 
+				{
+					aData[this.oLocalConfData.backward.vendorduplicate] = this.aStorage;
+				}
+				
+				this.store2LocalStorage(aData);
+			}
+			
+			
             this.aInitStorage = this.copyObject(aData.vendors);
 
             //If there is a storage previously by migration not set by JENTIS Consent Engine, then the send variables
@@ -670,16 +708,7 @@ window.jentis.consent.engine = new function () {
         }
 
         //Now write it to the local storage
-        if (window.jentis.helper.bIsLocalStorageAvailable === true) {
-            localStorage.setItem("jentis.consent.data", JSON.stringify(aData));
-        } else {
-            window.jentis.helper.setCookie({
-                "name": "jts_cmp",
-                "value": JSON.stringify(aData),
-                "exdays": 365,
-                "sameSite": "Strict"
-            });
-        }
+		this.store2LocalStorage(aData);
 
         //We want to have the new storage data even in the object storage variables
         this.aStorage = aStorage;
@@ -705,7 +734,21 @@ window.jentis.consent.engine = new function () {
         return this.sConsentId;
     }
 
-
+	
+	this.store2LocalStorage = function(aData)
+	{
+		if (window.jentis.helper.bIsLocalStorageAvailable === true) {
+            localStorage.setItem("jentis.consent.data", JSON.stringify(aData));
+        } else {
+            window.jentis.helper.setCookie({
+                "name": "jts_cmp",
+                "value": JSON.stringify(aData),
+                "exdays": 365,
+                "sameSite": "Strict"
+            });
+        }		
+	}
+	
     /**
      * Return a GUID in Version 4
      *
