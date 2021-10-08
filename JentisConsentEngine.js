@@ -20,6 +20,8 @@ window.jentis.consent.engine = new function () {
      */
     this.init = function () {
 		
+		this.v = "2";
+		
 		//Because of ID changens at version 2 of JENTIS, we have to migrate old vendorIds.
 		this.setV2MappingMigration();
 		
