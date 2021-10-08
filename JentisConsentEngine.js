@@ -19,18 +19,7 @@ window.jentis.consent.engine = new function () {
      * While Loading we want to init all the consent and vendor status.
      */
     this.init = function () {
-		
-		//Because of ID changens at version 2 of JENTIS, we have to migrate old vendorIds.
-		this.vendorV2Migration = {
-			"adformDMP" : "adformdmp",
-			"ga" : "googleanalytics",
-			"fb" : "facebook",
-			"partnerizeservertoserver" : "partnerize",
-			"googleoptimize" : "googleopt",
-			"cjaffiliate" : "cj-affiliate",
-			"scrolltracker" : "scrolltracker"
-		};		
-		
+
         if (typeof window.jentis.consent.config !== "undefined") {
 
             if (Object.keys(window.jentis.consent.config.vendors).length === 0) {
@@ -118,22 +107,10 @@ window.jentis.consent.engine = new function () {
         this.readStorage();
         this.init_eventlistener();
         this.init_consentStatus();
-		
         var bBarShow = this.checkifBarShow();
         this.startJentisTracking(bBarShow);
     }
 
-
-    //*************************
-    //*************************
-    //MIGRATION FUNCTION
-    //*************************
-    //*************************
-	this.updateVendorIdMappingTable = function(oMapping)
-	{
-		this.vendorV2Migration = oMapping;		
-		this.readStorage();
-	}
 
     //*************************
     //*************************
@@ -342,52 +319,19 @@ window.jentis.consent.engine = new function () {
             //Set the initial storage to empty object to realize the different when we want to store the status.
             this.aInitStorage = {};
         } else {
-			
-			
             this.sConsentId = aData.consentid;
             this.iLastUpdate = aData.lastupdate;
             this.aStorage = aData.vendors;
             this.bUserConsent = aData.userconsent;
 
             //Backwards compatible
-            if (
+            if (typeof this.aStorage === "undefined" &&
                 typeof this.oLocalConfData.backward !== "undefined" &&
                 typeof this.oLocalConfData.backward.vendorduplicate !== "undefined"
             ) {
                 this.aStorage = aData[this.oLocalConfData.backward.vendorduplicate];
             }
 
-			//V2 Migration of old vendorIDs.
-			var bV2Migration = false;
-			for(var sOldVendorId in this.aStorage)
-			{
-				var sNewVendorId = this.vendorV2Migration[sOldVendorId];
-				if(typeof sNewVendorId !== "undefined")
-				{
-					this.aStorage[sNewVendorId] = this.aStorage[sOldVendorId];
-					delete this.aStorage[sOldVendorId];
-					bV2Migration = true;
-				}				
-			}	
-			
-			//If there is a new storage because of Migration, then strore it now even to the local storage.
-			if(bV2Migration)
-			{
-				aData.vendors = this.aStorage;
-				
-				//Backwards compatible
-				if (typeof this.aStorage === "undefined" &&
-					typeof this.oLocalConfData.backward !== "undefined" &&
-					typeof this.oLocalConfData.backward.vendorduplicate !== "undefined"
-				) 
-				{
-					aData[this.oLocalConfData.backward.vendorduplicate] = this.aStorage;
-				}
-				
-				this.store2LocalStorage(aData);
-			}
-			
-			
             this.aInitStorage = this.copyObject(aData.vendors);
 
             //If there is a storage previously by migration not set by JENTIS Consent Engine, then the send variables
@@ -708,7 +652,16 @@ window.jentis.consent.engine = new function () {
         }
 
         //Now write it to the local storage
-		this.store2LocalStorage(aData);
+        if (window.jentis.helper.bIsLocalStorageAvailable === true) {
+            localStorage.setItem("jentis.consent.data", JSON.stringify(aData));
+        } else {
+            window.jentis.helper.setCookie({
+                "name": "jts_cmp",
+                "value": JSON.stringify(aData),
+                "exdays": 365,
+                "sameSite": "Strict"
+            });
+        }
 
         //We want to have the new storage data even in the object storage variables
         this.aStorage = aStorage;
@@ -734,21 +687,7 @@ window.jentis.consent.engine = new function () {
         return this.sConsentId;
     }
 
-	
-	this.store2LocalStorage = function(aData)
-	{
-		if (window.jentis.helper.bIsLocalStorageAvailable === true) {
-            localStorage.setItem("jentis.consent.data", JSON.stringify(aData));
-        } else {
-            window.jentis.helper.setCookie({
-                "name": "jts_cmp",
-                "value": JSON.stringify(aData),
-                "exdays": 365,
-                "sameSite": "Strict"
-            });
-        }		
-	}
-	
+
     /**
      * Return a GUID in Version 4
      *
