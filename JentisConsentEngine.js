@@ -21,81 +21,10 @@ window.jentis.consent.engine = new function () {
     this.init = function () {
 		
 		//Because of ID changens at version 2 of JENTIS, we have to migrate old vendorIds.
-		this.vendorV2Migration = {
-			"adformDMP" : "adformdmp",
-			"ga" : "googleanalytics",
-			"fb" : "facebook",
-			"partnerizeservertoserver" : "partnerize",
-			"googleoptimize" : "googleopt",
-			"cjaffiliate" : "cj-affiliate",
-			"scrolltracker" : "scrolltracker"
-		};		
+		this.setV2MappingMigration();
 		
-        if (typeof window.jentis.consent.config !== "undefined") {
-
-            if (Object.keys(window.jentis.consent.config.vendors).length === 0) {
-                window.jentis.consent.config.vendors = {
-                    "*": {
-                        "vendor": {
-                            "id": "*",
-                            "name": "",
-                            "street": "",
-                            "zip": "",
-                            "country": {
-                                "iso": "-",
-                                "name": ""
-                            }
-                        },
-                        "purpose": {
-                            "id": "other",
-                            "name": "Other"
-                        },
-                        "justification": {
-                            "id": "other",
-                            "name": "other"
-                        },
-                        "deniable": false,
-                        "description": ""
-                    }
-                };
-            }
-
-            this.oLocalConfData = window.jentis.consent.config;
-        } else {
-            console.log("jentis.consent.engine config not found - fallback config");
-            this.oLocalConfData = {
-                timeoutBarShow: -1,
-                backward: {},
-                bModeStartInitTrackOnJustificationOther: true,
-                template: {},
-                vendors:
-                    {
-                        "*": {
-                            "vendor": {
-                                "id": "*",
-                                "name": "",
-                                "street": "",
-                                "zip": "",
-                                "country": {
-                                    "iso": "-",
-                                    "name": ""
-                                }
-                            },
-                            "purpose": {
-                                "id": "other",
-                                "name": "Other"
-                            },
-                            "justification": {
-                                "id": "other",
-                                "name": "other"
-                            },
-                            "deniable": false,
-                            "description": ""
-                        }
-                    }
-            }
-
-        }
+		//Set Fallback Configurations.
+		this.setFallbackConfiguration();
 
         //Global variables
         this.aEventCache = {};				//Event Cache for async Callback
@@ -123,17 +52,97 @@ window.jentis.consent.engine = new function () {
         this.startJentisTracking(bBarShow);
     }
 
-
-    //*************************
-    //*************************
-    //MIGRATION FUNCTION
-    //*************************
-    //*************************
-	this.updateVendorIdMappingTable = function(oMapping)
+	this.setV2MappingMigration = function()
 	{
-		this.vendorV2Migration = oMapping;		
-		this.readStorage();
+		if(typeof window.jentis.consent.v2mapper !== "undefined")
+		{
+			
+			this.vendorV2Migration = window.jentis.consent.v2mapper;
+		}
+		else
+		{
+			this.vendorV2Migration = {
+				"adformDMP" : "adformdmp",
+				"ga" : "googleanalytics",
+				"fb" : "facebook",
+				"partnerizeservertoserver" : "partnerize",
+				"googleoptimize" : "googleopt",
+				"cjaffiliate" : "cj-affiliate",
+				"scrolltracker" : "scrolltracker"
+			};		
+		}
 	}
+
+	this.setFallbackConfiguration = function()
+	{
+		if (typeof window.jentis.consent.config !== "undefined") {
+
+			if (Object.keys(window.jentis.consent.config.vendors).length === 0) {
+				window.jentis.consent.config.vendors = {
+					"*": {
+						"vendor": {
+							"id": "*",
+							"name": "",
+							"street": "",
+							"zip": "",
+							"country": {
+								"iso": "-",
+								"name": ""
+							}
+						},
+						"purpose": {
+							"id": "other",
+							"name": "Other"
+						},
+						"justification": {
+							"id": "other",
+							"name": "other"
+						},
+						"deniable": false,
+						"description": ""
+					}
+				};
+			}
+
+			this.oLocalConfData = window.jentis.consent.config;
+		} else {
+			console.log("jentis.consent.engine config not found - fallback config");
+			this.oLocalConfData = {
+				timeoutBarShow: -1,
+				backward: {},
+				bModeStartInitTrackOnJustificationOther: true,
+				template: {},
+				vendors:
+					{
+						"*": {
+							"vendor": {
+								"id": "*",
+								"name": "",
+								"street": "",
+								"zip": "",
+								"country": {
+									"iso": "-",
+									"name": ""
+								}
+							},
+							"purpose": {
+								"id": "other",
+								"name": "Other"
+							},
+							"justification": {
+								"id": "other",
+								"name": "other"
+							},
+							"deniable": false,
+							"description": ""
+						}
+					}
+			}
+
+		}
+	}
+
+
 
     //*************************
     //*************************
