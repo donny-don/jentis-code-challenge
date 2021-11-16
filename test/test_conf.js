@@ -43,7 +43,7 @@ window.jentis = window.jentis || {};
          ],
          "justification":{
             "id":"consent",
-            "name":"Consent"
+            "name":"consent"
          },
          "description":"This is a vendor"
       },
