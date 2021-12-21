@@ -101,7 +101,8 @@ window.jentis.consent.engine = new function () {
 							"name": "other"
 						},
 						"deniable": false,
-						"description": ""
+						"description": "",
+						"no-consent-mode": false
 					}
 				};
 			}
@@ -136,7 +137,8 @@ window.jentis.consent.engine = new function () {
 								"name": "other"
 							},
 							"deniable": false,
-							"description": ""
+							"description": "",
+							"no-consent-mode": false
 						}
 					}
 			}
@@ -499,6 +501,13 @@ window.jentis.consent.engine = new function () {
         //We want to override those vendors which are defined by the parameter.
         for (var sVendorId in aVendorConsents) {
             this.aStorage[sVendorId] = aVendorConsents[sVendorId];
+			
+			//If this vendor is enabled for no consent mode and if the consent is false, then set the consent to "ncm"			
+			if(this.aStorage[sVendorId] === false && this.oLocalConfData.vendors[sVendorId]["no-consent-mode"] === true)
+			{
+				this.aStorage[sVendorId] = "ncm";
+			}
+			
         }
 
         //Now set the new storage to the localstorage
@@ -517,6 +526,15 @@ window.jentis.consent.engine = new function () {
 
             if (oVendorData.justification.id === "consent" || oVendorData.deniable === true) {
                 aStorage[sVendorId] = false;
+				
+				//If this vendor is enabled for no consent mode and if the consent is false, then set the consent to "ncm"			
+				if(this.oLocalConfData.vendors[sVendorId]["no-consent-mode"] === true)
+				{
+					aStorage[sVendorId] = "ncm";
+				}
+
+				
+				
             } else {
                 aStorage[sVendorId] = true;
             }
