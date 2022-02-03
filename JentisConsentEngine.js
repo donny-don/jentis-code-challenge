@@ -45,7 +45,7 @@ window.jentis.consent.engine = new function () {
                         },
                         "deniable": false,
                         "description": "",
-                        "no-consent-mode": false
+                        "no_consent_mode": false
                     }
                 };
             }
@@ -81,7 +81,7 @@ window.jentis.consent.engine = new function () {
                             },
                             "deniable": false,
                             "description": "",
-                            "no-consent-mode": false
+                            "no_consent_mode": false
                         }
                     }
             }
@@ -439,11 +439,10 @@ window.jentis.consent.engine = new function () {
         for (var sVendorId in aVendorConsents) {
             this.aStorage[sVendorId] = aVendorConsents[sVendorId];
 
-			//If this vendor is enabled for no consent mode and if the consent is false, then set the consent to "ncm"
-			if(this.aStorage[sVendorId] === false && this.oLocalConfData.vendors[sVendorId]["no-consent-mode"] === true)
-			{
-				this.aStorage[sVendorId] = "ncm";
-			}
+            //If this vendor is enabled for no consent mode and if the consent is false, then set the consent to "ncm"
+            if (this.aStorage[sVendorId] === false && this.oLocalConfData.vendors[sVendorId]["no_consent_mode"] === true) {
+                this.aStorage[sVendorId] = "ncm";
+            }
 
         }
 
@@ -464,12 +463,10 @@ window.jentis.consent.engine = new function () {
             if (oVendorData.justification.id === "consent" || oVendorData.deniable === true) {
                 aStorage[sVendorId] = false;
 
-				//If this vendor is enabled for no consent mode and if the consent is false, then set the consent to "ncm"
-				if(this.oLocalConfData.vendors[sVendorId]["no-consent-mode"] === true)
-				{
-					aStorage[sVendorId] = "ncm";
-				}
-
+                //If this vendor is enabled for no consent mode and if the consent is false, then set the consent to "ncm"
+                if (this.oLocalConfData.vendors[sVendorId]["no_consent_mode"] === true) {
+                    aStorage[sVendorId] = "ncm";
+                }
 
 
             } else {
@@ -581,25 +578,25 @@ window.jentis.consent.engine = new function () {
         var aPosChange = [];
         var aPosNegChange = {};
         var bChange = false;
-		var bShouldWeSendTheConsentDoc = false;
+        var bShouldWeSendTheConsentDoc = false;
 
         for (var sKey in oData2Check) {
             if (typeof this.aInitStorage[sKey] === "undefined") {
                 //A consent based vendor was added so it is a change.
                 aPosChange.push(sKey);
-				bShouldWeSendTheConsentDoc = true;
+                bShouldWeSendTheConsentDoc = true;
             } else {
                 if (oData2Check[sKey] === true && this.aInitStorage[sKey] === false) {
                     //This Consent was added
                     aPosChange.push(sKey);
                     aPosNegChange[sKey] = true;
                     bChange = true;
-					bShouldWeSendTheConsentDoc = true;
+                    bShouldWeSendTheConsentDoc = true;
                 } else if (oData2Check[sKey] === false && this.aInitStorage[sKey] === true) {
                     //This Consent was deleted
                     bChange = true;
                     aPosNegChange[sKey] = false;
-					bShouldWeSendTheConsentDoc = true;
+                    bShouldWeSendTheConsentDoc = true;
                 }
             }
         }
@@ -618,7 +615,7 @@ window.jentis.consent.engine = new function () {
 
         //Now we are ready with the comparison, so prepare for the next comparison
         this.aInitStorage = this.copyObject(oData2Check);
-        return [aPosNegChange,bShouldWeSendTheConsentDoc];
+        return [aPosNegChange, bShouldWeSendTheConsentDoc];
 
     }
 
@@ -689,14 +686,14 @@ window.jentis.consent.engine = new function () {
         this.aStorage = aStorage;
 
         //Check if something had changed so we can trigger the events.
-		var aChangeResult = this.checkStorageChange(aStorage);
+        var aChangeResult = this.checkStorageChange(aStorage);
         var oVendorsChanged = aChangeResult[0];
-		var bNewConsentDocSendBecauseOfChange = aChangeResult[1];
+        var bNewConsentDocSendBecauseOfChange = aChangeResult[1];
 
         aData["vendorsChanged"] = oVendorsChanged;
 
         //Now we want to send it if wanted
-        if (bSend === true && bNewConsentDocSendBecauseOfChange ===true) {
+        if (bSend === true && bNewConsentDocSendBecauseOfChange === true) {
             window.jentis.helper.setEvent("jentis.consent.engine", "send-consent-data", aData);
             //We can only set it to true. If send not wanted, may it is allready send to bSend is correctly mayba true.
             this.bSend = true;
