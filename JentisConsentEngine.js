@@ -706,7 +706,7 @@ window.jentis.consent.engine = new function () {
         aData["vendorsChanged"] = oVendorsChanged;
 
         //Now we want to send it if wanted
-        if (bSend === true && bNewConsentDocSendBecauseOfChange === true) {
+        if (bSend === true && ( bNewConsentDocSendBecauseOfChange === true || this.bSend === false)) {
             window.jentis.helper.setEvent("jentis.consent.engine", "send-consent-data", aData);
             //We can only set it to true. If send not wanted, may it is allready send to bSend is correctly mayba true.
             this.bSend = true;
