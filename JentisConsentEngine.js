@@ -137,15 +137,11 @@ window.jentis.consent.engine = new function () {
                     bTrack = true;
                     break;
                 }
-            } else if (this.oLocalConfData.bModeStartInitTrackOnJustificationOther === true) {
-                //if the justification is different to consent and in the config is set START ON JUSTIFICATION OTHER is true, then we start tracking.
+            } else{
+                //if the justification is different to consent, then we start tracking.
                 bTrack = true;
                 break;
-            } else if (typeof this.sConsentId !== "undefined" && this.sConsentId !== false && bBarShow === false) {
-                //if the justification is different to consent and we have allreade a consent, and the bar is not showen, then we start tracking.
-                bTrack = true;
-                break;
-            }
+            } 
         }
 
         if (bTrack === true && this.bStartTrack !== true) {
