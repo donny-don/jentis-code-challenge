@@ -133,7 +133,7 @@ window.jentis.consent.engine = new function () {
 
             if (oVendorConfig.justification.id === "consent") {
                 //if the Justification is consent and we have a consent and the consent for this vendor is true, then start tracking
-                if (typeof this.sConsentId !== "undefined" && this.sConsentId !== false && bBarShow === false && this.aStorage[sVendorId] === true) {
+                if (typeof this.sConsentId !== "undefined" && this.sConsentId !== false && bBarShow === false && (this.aStorage[sVendorId] === true || this.aStorage[sVendorId] === "ncm")) {
                     bTrack = true;
                     break;
                 }
@@ -585,27 +585,27 @@ window.jentis.consent.engine = new function () {
                 //A consent based vendor was added so it is a change.
                 aPosChange.push(sKey);
                 bShouldWeSendTheConsentDoc = true;
-            } else {				
-				
+            } else {
+
                 if (
 
-					(this.aInitStorage[sKey] === false && oData2Check[sKey] === true) || 
-					(this.aInitStorage[sKey] === "ncm" && oData2Check[sKey] === true) || 
-					(this.aInitStorage[sKey] === false && oData2Check[sKey] === "ncm") 
-						
-					) {
+                    (this.aInitStorage[sKey] === false && oData2Check[sKey] === true) ||
+                    (this.aInitStorage[sKey] === "ncm" && oData2Check[sKey] === true) ||
+                    (this.aInitStorage[sKey] === false && oData2Check[sKey] === "ncm")
+
+                ) {
                     //This Consent was added
                     aPosChange.push(sKey);
                     aPosNegChange[sKey] = oData2Check[sKey];
                     bChange = true;
                     bShouldWeSendTheConsentDoc = true;
                 } else if (
-				
-					(this.aInitStorage[sKey] === true && oData2Check[sKey] === false) ||
-					(this.aInitStorage[sKey] === true && oData2Check[sKey] === "ncm") ||
-					(this.aInitStorage[sKey] === "ncm" && oData2Check[sKey] === false)
-				
-				) {
+
+                    (this.aInitStorage[sKey] === true && oData2Check[sKey] === false) ||
+                    (this.aInitStorage[sKey] === true && oData2Check[sKey] === "ncm") ||
+                    (this.aInitStorage[sKey] === "ncm" && oData2Check[sKey] === false)
+
+                ) {
                     //This Consent was deleted
                     bChange = true;
                     aPosNegChange[sKey] = oData2Check[sKey];
@@ -706,7 +706,7 @@ window.jentis.consent.engine = new function () {
         aData["vendorsChanged"] = oVendorsChanged;
 
         //Now we want to send it if wanted
-        if (bSend === true && ( bNewConsentDocSendBecauseOfChange === true || this.bSend === false)) {
+        if (bSend === true && (bNewConsentDocSendBecauseOfChange === true || this.bSend === false)) {
             window.jentis.helper.setEvent("jentis.consent.engine", "send-consent-data", aData);
             //We can only set it to true. If send not wanted, may it is allready send to bSend is correctly mayba true.
             this.bSend = true;
