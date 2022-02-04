@@ -596,7 +596,7 @@ window.jentis.consent.engine = new function () {
 					) {
                     //This Consent was added
                     aPosChange.push(sKey);
-                    aPosNegChange[sKey] = true;
+                    aPosNegChange[sKey] = oData2Check[sKey];
                     bChange = true;
                     bShouldWeSendTheConsentDoc = true;
                 } else if (
@@ -608,7 +608,7 @@ window.jentis.consent.engine = new function () {
 				) {
                     //This Consent was deleted
                     bChange = true;
-                    aPosNegChange[sKey] = false;
+                    aPosNegChange[sKey] = oData2Check[sKey];
                     bShouldWeSendTheConsentDoc = true;
                 }
             }
