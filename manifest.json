@@ -4,7 +4,7 @@
     "type": "plugin",
     "name": "Consent engine",
     "description": "",
-    "version": "1.0.16",
+    "version": "1.0.17",
     "author": "JENTIS GmbH",
     "publishdate": "08.05.2021"
   },
