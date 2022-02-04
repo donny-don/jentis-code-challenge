@@ -585,14 +585,27 @@ window.jentis.consent.engine = new function () {
                 //A consent based vendor was added so it is a change.
                 aPosChange.push(sKey);
                 bShouldWeSendTheConsentDoc = true;
-            } else {
-                if (oData2Check[sKey] === true && this.aInitStorage[sKey] === false) {
+            } else {				
+				
+                if (
+
+					(this.aInitStorage[sKey] === false && oData2Check[sKey] === true) || 
+					(this.aInitStorage[sKey] === "ncm" && oData2Check[sKey] === true) || 
+					(this.aInitStorage[sKey] === false && oData2Check[sKey] === "ncm") 
+						
+					) {
                     //This Consent was added
                     aPosChange.push(sKey);
                     aPosNegChange[sKey] = true;
                     bChange = true;
                     bShouldWeSendTheConsentDoc = true;
-                } else if (oData2Check[sKey] === false && this.aInitStorage[sKey] === true) {
+                } else if (
+				
+					(this.aInitStorage[sKey] === true && oData2Check[sKey] === false) ||
+					(this.aInitStorage[sKey] === true && oData2Check[sKey] === "ncm") ||
+					(this.aInitStorage[sKey] === "ncm" && oData2Check[sKey] === false)
+				
+				) {
                     //This Consent was deleted
                     bChange = true;
                     aPosNegChange[sKey] = false;
