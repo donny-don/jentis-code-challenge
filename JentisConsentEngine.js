@@ -1,5 +1,5 @@
 /**
- * The JENTIS consent engine
+ * The JENTIS consent engine 1.0.17
  *
  * The JENTIS consent engine is the central API component
  * on page to communicate with all other consent components.
