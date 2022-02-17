@@ -20,6 +20,64 @@ window.jentis.consent.engine = new function () {
      */
     this.init = function () {
 
+        this.v = "2";
+
+        //Because of ID changens at version 2 of JENTIS, we have to migrate old vendorIds.
+        this.setV2MappingMigration();
+
+        //Set Fallback Configurations.
+        this.setFallbackConfiguration();
+
+        //Global variables
+        this.aEventCache = {};				//Event Cache for async Callback
+        this.bNewVendorConsent = false;			//Bool, gibt an ob in der Congig Tools gefunden wurden die noch nicht im Storage sind.
+
+        this.sConsentId = false;			//Current ConsentID
+        this.bUserConsent = false;			//If true, the consent was given from the user, if false, the consent was given without the user (justification and bModeStartInitTrackOnJustificationOther)
+        this.iLastUpdate = false;			//Date in Unixtimestamp when the last save happend.
+        this.bSend = false;			//true if the consent is send, false if never before send. Important for migration.
+        this.aStorage = {};				//List of bools for each pixel from the loca storage
+        this.aInitStorage = {};				//List of bools for each pixel (Status since the last save action)
+
+        this.bStartTrack = null;				//Current Status if allready started to track.
+
+
+        //Check if we are within a iframe
+        this.bIframe = window.self !== window.top;
+
+        //Start with init processing
+        this.readStorage();
+        this.init_eventlistener();
+        this.init_consentStatus();
+        var bBarShow = this.checkifBarShow();
+        this.startJentisTracking(bBarShow);
+    }
+
+
+    //*************************
+    //*************************
+    //MIGRATION FUNCTIONS
+    //*************************
+    //*************************
+
+
+    this.setV2MappingMigration = function () {
+        if (typeof window.jentis.consent.v2mapper !== "undefined") {
+            this.vendorV2Migration = window.jentis.consent.v2mapper;
+        } else {
+            this.vendorV2Migration = {
+                "adformDMP": "adformdmp",
+                "ga": "googleanalytics",
+                "fb": "facebook",
+                "partnerizeservertoserver": "partnerize",
+                "googleoptimize": "googleopt",
+                "cjaffiliate": "cj-affiliate",
+                "scrolltracker": "scrolltracker"
+            };
+        }
+    }
+
+    this.setFallbackConfiguration = function () {
         if (typeof window.jentis.consent.config !== "undefined") {
 
             if (Object.keys(window.jentis.consent.config.vendors).length === 0) {
@@ -83,32 +141,7 @@ window.jentis.consent.engine = new function () {
                         }
                     }
             }
-
         }
-
-        //Global variables
-        this.aEventCache = {};				//Event Cache for async Callback
-        this.bNewVendorConsent = false;			//Bool, gibt an ob in der Congig Tools gefunden wurden die noch nicht im Storage sind.
-
-        this.sConsentId = false;			//Current ConsentID
-        this.bUserConsent = false;			//If true, the consent was given from the user, if false, the consent was given without the user (justification and bModeStartInitTrackOnJustificationOther)
-        this.iLastUpdate = false;			//Date in Unixtimestamp when the last save happend.
-        this.bSend = false;			//true if the consent is send, false if never before send. Important for migration.
-        this.aStorage = {};				//List of bools for each pixel from the loca storage
-        this.aInitStorage = {};				//List of bools for each pixel (Status since the last save action)
-
-        this.bStartTrack = null;				//Current Status if allready started to track.
-
-
-        //Check if we are within a iframe
-        this.bIframe = window.self !== window.top;
-
-        //Start with init processing
-        this.readStorage();
-        this.init_eventlistener();
-        this.init_consentStatus();
-        var bBarShow = this.checkifBarShow();
-        this.startJentisTracking(bBarShow);
     }
 
 
@@ -135,11 +168,11 @@ window.jentis.consent.engine = new function () {
                     bTrack = true;
                     break;
                 }
-            } else{
+            } else {
                 //if the justification is different to consent, then we start tracking.
                 bTrack = true;
                 break;
-            } 
+            }
         }
 
         if (bTrack === true && this.bStartTrack !== true) {
@@ -327,6 +360,34 @@ window.jentis.consent.engine = new function () {
             ) {
                 this.aStorage = aData[this.oLocalConfData.backward.vendorduplicate];
             }
+
+            //V2 Migration of old vendorIDs.
+            var bV2Migration = false;
+            for (var sOldVendorId in this.aStorage) {
+                var sNewVendorId = this.vendorV2Migration[sOldVendorId];
+                if (typeof sNewVendorId !== "undefined") {
+                    this.aStorage[sNewVendorId] = this.aStorage[sOldVendorId];
+                    delete this.aStorage[sOldVendorId];
+                    bV2Migration = true;
+                }
+            }
+
+            //If there is a new storage because of Migration, then strore it now even to the local storage.
+            if (bV2Migration) {
+                aData.vendors = this.aStorage;
+
+                //Backwards compatible
+                if (typeof this.aStorage === "undefined" &&
+                    typeof this.oLocalConfData.backward !== "undefined" &&
+                    typeof this.oLocalConfData.backward.vendorduplicate !== "undefined"
+                ) {
+                    aData[this.oLocalConfData.backward.vendorduplicate] = this.aStorage;
+                }
+
+                this.store2LocalStorage(aData);
+            }
+            //END V2 Migration of old vendorIDs.
+
 
             this.aInitStorage = this.copyObject(aData.vendors);
 
@@ -559,25 +620,25 @@ window.jentis.consent.engine = new function () {
         var aPosChange = [];
         var aPosNegChange = {};
         var bChange = false;
-		var bShouldWeSendTheConsentDoc = false;
+        var bShouldWeSendTheConsentDoc = false;
 
         for (var sKey in oData2Check) {
             if (typeof this.aInitStorage[sKey] === "undefined") {
                 //A consent based vendor was added so it is a change.
                 aPosChange.push(sKey);
-				bShouldWeSendTheConsentDoc = true;
+                bShouldWeSendTheConsentDoc = true;
             } else {
                 if (oData2Check[sKey] === true && this.aInitStorage[sKey] === false) {
                     //This Consent was added
                     aPosChange.push(sKey);
                     aPosNegChange[sKey] = true;
                     bChange = true;
-					bShouldWeSendTheConsentDoc = true;
+                    bShouldWeSendTheConsentDoc = true;
                 } else if (oData2Check[sKey] === false && this.aInitStorage[sKey] === true) {
                     //This Consent was deleted
                     bChange = true;
                     aPosNegChange[sKey] = false;
-					bShouldWeSendTheConsentDoc = true;
+                    bShouldWeSendTheConsentDoc = true;
                 }
             }
         }
@@ -596,7 +657,7 @@ window.jentis.consent.engine = new function () {
 
         //Now we are ready with the comparison, so prepare for the next comparison
         this.aInitStorage = this.copyObject(oData2Check);
-        return [aPosNegChange,bShouldWeSendTheConsentDoc];
+        return [aPosNegChange, bShouldWeSendTheConsentDoc];
 
     }
 
@@ -652,29 +713,20 @@ window.jentis.consent.engine = new function () {
         }
 
         //Now write it to the local storage
-        if (window.jentis.helper.bIsLocalStorageAvailable === true) {
-            localStorage.setItem("jentis.consent.data", JSON.stringify(aData));
-        } else {
-            window.jentis.helper.setCookie({
-                "name": "jts_cmp",
-                "value": JSON.stringify(aData),
-                "exdays": 365,
-                "sameSite": "Strict"
-            });
-        }
+        this.store2LocalStorage(aData);
 
         //We want to have the new storage data even in the object storage variables
         this.aStorage = aStorage;
 
         //Check if something had changed so we can trigger the events.
-		var aChangeResult = this.checkStorageChange(aStorage);
+        var aChangeResult = this.checkStorageChange(aStorage);
         var oVendorsChanged = aChangeResult[0];
-		var bNewConsentDocSendBecauseOfChange = aChangeResult[1];
-		
+        var bNewConsentDocSendBecauseOfChange = aChangeResult[1];
+
         aData["vendorsChanged"] = oVendorsChanged;
 
         //Now we want to send it if wanted
-        if (bSend === true && ( bNewConsentDocSendBecauseOfChange === true || this.bSend === false)) {
+        if (bSend === true && (bNewConsentDocSendBecauseOfChange === true || this.bSend === false)) {
             window.jentis.helper.setEvent("jentis.consent.engine", "send-consent-data", aData);
             //We can only set it to true. If send not wanted, may it is allready send to bSend is correctly mayba true.
             this.bSend = true;
@@ -690,6 +742,19 @@ window.jentis.consent.engine = new function () {
         return this.sConsentId;
     }
 
+
+    this.store2LocalStorage = function (aData) {
+        if (window.jentis.helper.bIsLocalStorageAvailable === true) {
+            localStorage.setItem("jentis.consent.data", JSON.stringify(aData));
+        } else {
+            window.jentis.helper.setCookie({
+                "name": "jts_cmp",
+                "value": JSON.stringify(aData),
+                "exdays": 365,
+                "sameSite": "Strict"
+            });
+        }
+    }
 
     /**
      * Return a GUID in Version 4
@@ -732,4 +797,3 @@ window.jentis.consent.engine = new function () {
 //We have to set the init event external because the object jentis.consent.engine must be created at this time so
 //others can access the object within the event call.
 window.jentis.consent.engine.init();
-
