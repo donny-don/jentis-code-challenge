@@ -500,6 +500,22 @@ window.jentis.consent.engine = new function () {
     }
 
     /**
+     * Opt out, means really all vendors to false, even if they have legitimate interest or no consent mode activated
+     */
+    this.OptOut = function () {
+
+        //Set all vendors to false if justification is consent, otherwise it must be set to true
+        var aStorage = {};
+        for (var sVendorId in this.oLocalConfData.vendors) {
+            aStorage[sVendorId] = false;
+        }
+
+        //Now set the new storage to the localstorage
+        return this.writeStorage(aStorage, true);
+    }
+
+
+    /**
      * Denies all consents of all vendors.
      */
     this.DenyAll = function () {
