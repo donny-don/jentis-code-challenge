@@ -207,9 +207,7 @@ window.jentis.consent.engine = new function () {
             if (typeof aStorage[sVendorId] === "undefined") {
                 //We do not have a stored consent of this vendor
                 if (oVendorConfig.justification.id === "consent") {
-                    //If the justification is consent, we have to wait for the consent.
-                    aStorage[sVendorId] = false;
-
+                    //Don't set the Consent automatically to false, because there is no decission made if true/ncm/false
                     //Now we have to know that there is a need for a new consent.
                     this.bNewVendorConsent = true;
                 } else {
@@ -249,6 +247,12 @@ window.jentis.consent.engine = new function () {
         if (this.bSend === false && bNoConsentJustification === true && this.oLocalConfData.bModeStartInitTrackOnJustificationOther === true) {
             bSendConsent = true;
             bFromUser = false;
+        }
+
+        //If there is a consent storage (consentid exists), and we send the consent before, and there is a new vendor.
+        if (this.bSend === true && this.sConsentId !== false && this.bNewVendorConsent === true) {
+            bSendConsent = true;
+            bFromUser = true;
         }
 
         if (this.bWriteStorage) {
@@ -498,6 +502,22 @@ window.jentis.consent.engine = new function () {
         //Now set the new storage to the localstorage
         return this.writeStorage(this.aStorage, true);
     }
+
+    /**
+     * Opt out, means really all vendors to false, even if they have legitimate interest or no consent mode activated
+     */
+    this.OptOut = function () {
+
+        //Set all vendors to false if justification is consent, otherwise it must be set to true
+        var aStorage = {};
+        for (var sVendorId in this.oLocalConfData.vendors) {
+            aStorage[sVendorId] = false;
+        }
+
+        //Now set the new storage to the localstorage
+        return this.writeStorage(aStorage, true);
+    }
+
 
     /**
      * Denies all consents of all vendors.
