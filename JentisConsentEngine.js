@@ -1,5 +1,5 @@
 /**
- * The JENTIS consent engine
+ * The JENTIS consent engine 1.0.17
  *
  * The JENTIS consent engine is the central API component
  * on page to communicate with all other consent components.
@@ -102,7 +102,8 @@ window.jentis.consent.engine = new function () {
                             "name": "other"
                         },
                         "deniable": false,
-                        "description": ""
+                        "description": "",
+                        "no_consent_mode": false
                     }
                 };
             }
@@ -137,7 +138,8 @@ window.jentis.consent.engine = new function () {
                                 "name": "other"
                             },
                             "deniable": false,
-                            "description": ""
+                            "description": "",
+                            "no_consent_mode": false
                         }
                     }
             }
@@ -164,7 +166,7 @@ window.jentis.consent.engine = new function () {
 
             if (oVendorConfig.justification.id === "consent") {
                 //if the Justification is consent and we have a consent and the consent for this vendor is true, then start tracking
-                if (typeof this.sConsentId !== "undefined" && this.sConsentId !== false && bBarShow === false && this.aStorage[sVendorId] === true) {
+                if (typeof this.sConsentId !== "undefined" && this.sConsentId !== false && bBarShow === false && (this.aStorage[sVendorId] === true || this.aStorage[sVendorId] === "ncm")) {
                     bTrack = true;
                     break;
                 }
@@ -497,6 +499,12 @@ window.jentis.consent.engine = new function () {
         //We want to override those vendors which are defined by the parameter.
         for (var sVendorId in aVendorConsents) {
             this.aStorage[sVendorId] = aVendorConsents[sVendorId];
+
+            //If this vendor is enabled for no consent mode and if the consent is false, then set the consent to "ncm"
+            if (this.aStorage[sVendorId] === false && this.oLocalConfData.vendors[sVendorId]["no_consent_mode"] === true) {
+                this.aStorage[sVendorId] = "ncm";
+            }
+
         }
 
         //Now set the new storage to the localstorage
@@ -531,6 +539,13 @@ window.jentis.consent.engine = new function () {
 
             if (oVendorData.justification.id === "consent" || oVendorData.deniable === true) {
                 aStorage[sVendorId] = false;
+
+                //If this vendor is enabled for no consent mode and if the consent is false, then set the consent to "ncm"
+                if (this.oLocalConfData.vendors[sVendorId]["no_consent_mode"] === true) {
+                    aStorage[sVendorId] = "ncm";
+                }
+
+
             } else {
                 aStorage[sVendorId] = true;
             }
@@ -648,16 +663,29 @@ window.jentis.consent.engine = new function () {
                 aPosChange.push(sKey);
                 bShouldWeSendTheConsentDoc = true;
             } else {
-                if (oData2Check[sKey] === true && this.aInitStorage[sKey] === false) {
+
+                if (
+
+                    (this.aInitStorage[sKey] === false && oData2Check[sKey] === true) ||
+                    (this.aInitStorage[sKey] === "ncm" && oData2Check[sKey] === true) ||
+                    (this.aInitStorage[sKey] === false && oData2Check[sKey] === "ncm")
+
+                ) {
                     //This Consent was added
                     aPosChange.push(sKey);
-                    aPosNegChange[sKey] = true;
+                    aPosNegChange[sKey] = oData2Check[sKey];
                     bChange = true;
                     bShouldWeSendTheConsentDoc = true;
-                } else if (oData2Check[sKey] === false && this.aInitStorage[sKey] === true) {
+                } else if (
+
+                    (this.aInitStorage[sKey] === true && oData2Check[sKey] === false) ||
+                    (this.aInitStorage[sKey] === true && oData2Check[sKey] === "ncm") ||
+                    (this.aInitStorage[sKey] === "ncm" && oData2Check[sKey] === false)
+
+                ) {
                     //This Consent was deleted
                     bChange = true;
-                    aPosNegChange[sKey] = false;
+                    aPosNegChange[sKey] = oData2Check[sKey];
                     bShouldWeSendTheConsentDoc = true;
                 }
             }
