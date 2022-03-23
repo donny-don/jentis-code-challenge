@@ -661,6 +661,8 @@ window.jentis.consent.engine = new function () {
             if (typeof this.aInitStorage[sKey] === "undefined") {
                 //A consent based vendor was added so it is a change.
                 aPosChange.push(sKey);
+                aPosNegChange[sKey] = oData2Check[sKey];
+                bChange = true;
                 bShouldWeSendTheConsentDoc = true;
             } else {
 
