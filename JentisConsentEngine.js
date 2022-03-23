@@ -658,36 +658,29 @@ window.jentis.consent.engine = new function () {
         var bShouldWeSendTheConsentDoc = false;
 
         for (var sKey in oData2Check) {
-            if (typeof this.aInitStorage[sKey] === "undefined") {
-                //A consent based vendor was added so it is a change.
+            if (
+
+                ((typeof this.aInitStorage[sKey] === "undefined" || this.aInitStorage[sKey] === false) && oData2Check[sKey] === true) ||
+                ((typeof this.aInitStorage[sKey] !== "undefined" && this.aInitStorage[sKey] === "ncm") && oData2Check[sKey] === true) ||
+                ((typeof this.aInitStorage[sKey] === "undefined" || this.aInitStorage[sKey] === false) && oData2Check[sKey] === "ncm")
+
+            ) {
+                //This Consent was added
                 aPosChange.push(sKey);
+                aPosNegChange[sKey] = oData2Check[sKey];
+                bChange = true;
                 bShouldWeSendTheConsentDoc = true;
-            } else {
+            } else if (
 
-                if (
+                (typeof this.aInitStorage[sKey] !== "undefined" && this.aInitStorage[sKey] === true && oData2Check[sKey] === false) ||
+                (typeof this.aInitStorage[sKey] !== "undefined" && this.aInitStorage[sKey] === true && oData2Check[sKey] === "ncm") ||
+                (typeof this.aInitStorage[sKey] !== "undefined" && this.aInitStorage[sKey] === "ncm" && oData2Check[sKey] === false)
 
-                    (this.aInitStorage[sKey] === false && oData2Check[sKey] === true) ||
-                    (this.aInitStorage[sKey] === "ncm" && oData2Check[sKey] === true) ||
-                    (this.aInitStorage[sKey] === false && oData2Check[sKey] === "ncm")
-
-                ) {
-                    //This Consent was added
-                    aPosChange.push(sKey);
-                    aPosNegChange[sKey] = oData2Check[sKey];
-                    bChange = true;
-                    bShouldWeSendTheConsentDoc = true;
-                } else if (
-
-                    (this.aInitStorage[sKey] === true && oData2Check[sKey] === false) ||
-                    (this.aInitStorage[sKey] === true && oData2Check[sKey] === "ncm") ||
-                    (this.aInitStorage[sKey] === "ncm" && oData2Check[sKey] === false)
-
-                ) {
-                    //This Consent was deleted
-                    bChange = true;
-                    aPosNegChange[sKey] = oData2Check[sKey];
-                    bShouldWeSendTheConsentDoc = true;
-                }
+            ) {
+                //This Consent was deleted
+                bChange = true;
+                aPosNegChange[sKey] = oData2Check[sKey];
+                bShouldWeSendTheConsentDoc = true;
             }
         }
 
