@@ -501,7 +501,12 @@ window.jentis.consent.engine = new function () {
             this.aStorage[sVendorId] = aVendorConsents[sVendorId];
 
             //If this vendor is enabled for no consent mode and if the consent is false, then set the consent to "ncm"
-            if (this.aStorage[sVendorId] === false && this.oLocalConfData.vendors[sVendorId]["no_consent_mode"] === true) {
+            if (
+                this.aStorage[sVendorId] === false &&
+                typeof this.oLocalConfData.vendors[sVendorId] !== "undefined" &&
+                typeof this.oLocalConfData.vendors[sVendorId]["no_consent_mode"] !== "undefined" &&
+                this.oLocalConfData.vendors[sVendorId]["no_consent_mode"] === true
+            ) {
                 this.aStorage[sVendorId] = "ncm";
             }
 
