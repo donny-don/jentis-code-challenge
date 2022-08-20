@@ -3,6 +3,10 @@
 <head>
     <title>JENTIS Consent Engine Test</title>
 
+    <!-- Cookiebot: -->
+    <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="8d826d26-f8f9-4c00-9064-d18117b0bb12" 
+    data-blockingmode="auto" type="text/javascript"></script>
+
     <!-- JENTIS Helper is fully included, when you using JENTIS -->
     <script src="./test_helper_framework.js"></script>
 	
@@ -41,6 +45,7 @@
     <script src="./test_conf.js"></script>
     <script src="../JentisConsentEngine.js"/></script>
 	
+    <!-- probably hide Jentis consentbar -->
 	<script src="./Jentis_Consentbar.js"/></script>
 
 <script>
@@ -89,7 +94,7 @@
     <style>
         button {
             display: block;
-            margin-bottom: 20px;
+            margin-bottom: 10px; /* 20px; */
             min-width: 200px;
         }
     </style>
@@ -110,6 +115,14 @@
 <button onClick="MigrateInTimeConsent();">
     Do old consent IN TIME
 </button>
+
+<!-- little bit of space -->
+<hr>
+
+<!-- Cookiebot, detailed information - TODO   -->
+<div>
+    <script id="CookieDeclaration" src="https://consent.cookiebot.com/8d826d26-f8f9-4c00-9064-d18117b0bb12/cd.js" type="text/javascript" async></script>
+</div>
 
 </body>
 </html>
