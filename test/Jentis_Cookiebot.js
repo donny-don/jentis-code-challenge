@@ -42,9 +42,6 @@ function updateConsentData(cookiebot)
 		}
 	}
 	
-
-	console.log("test: ")
-
 	console.log(consentDataLayer);
 	jentis.consent.engine.setNewVendorConsents(consentDataLayer);
 
