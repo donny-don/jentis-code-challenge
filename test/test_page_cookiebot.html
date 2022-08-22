@@ -1,128 +1,189 @@
 <!doctype html>
 <html>
 <head>
-    <title>JENTIS Consent Engine Test</title>
+	<title>JENTIS Consent Engine - Cookiebot Test</title>
 
-    <!-- Cookiebot: -->
-    <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="8d826d26-f8f9-4c00-9064-d18117b0bb12" 
-    data-blockingmode="auto" type="text/javascript"></script>
+	<!-- Cookiebot: -->
+	<!-- data-culture="EN" for language (in cookiebot pro) -->
+	<script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="8d826d26-f8f9-4c00-9064-d18117b0bb12"
+		data-blockingmode="auto" type="text/javascript"></script>
 
-    <!-- JENTIS Helper is fully included, when you using JENTIS -->
-    <script src="./test_helper_framework.js"></script>
-	
+	<!-- JENTIS Helper is fully included, when you using JENTIS -->
+	<script src="./test_helper_framework.js"></script>
+
+
+	<link rel="stylesheet" href="./Jentis_Consentbar.css">
+
+	<!-- JENTIS CONSENT ENGINE API - Events -->
+	<script>
+		document.addEventListener('jentis.consent.engine.minimal-consent-given', function (e) {
+			console.log("Minimal Consent is given: %o", e.detail);
+		});
+		document.addEventListener('jentis.consent.engine.no-consent-given', function (e) {
+			console.log("No Consent is given: %o", e.detail);
+		});
+		document.addEventListener('jentis.consent.engine.send-consent-data', function (e) {
+			console.log("SEND Consent to Server: %o", e.detail);
+		});
+		document.addEventListener('jentis.consent.engine.show-bar', function (e) {
+			console.log("Show Bar now: %o", e.detail);
+		});
+
+		document.addEventListener('jentis.consent.engine.vendor-change', function (e) {
+			console.log("Vendor Changed: %o", e.detail);
+		});
+
+		document.addEventListener('jentis.consent.engine.vendor-add', function (e) {
+			console.log("Vendor Add: %o", e.detail);
+		});
+
+		document.addEventListener('jentis.consent.engine.init', function (e) {
+			console.log("CMP Init: %o", e.detail);
+		});
+
+	</script>
+
+	<script src="./test_conf.js"></script>
+	<script src="../JentisConsentEngine.js" />
+	</script>
+
+	<!-- drop the consent bar ?? -->
+	<script src="./Jentis_Consentbar.js" />
+	</script>
+
+	<script>
+
+		function acceptAll() {
+			jentis.consent.engine.AcceptAll();
+		}
+
+		function acceptGa() {
+			var sConsentId = jentis.consent.engine.setNewVendorConsents({
+				"ga": true,
+				"fb": true
+			});
+		}
+
+		function denyAll() {
+			var sConsentId = jentis.consent.engine.DenyAll();
+		}
+
+		function MigrateOldConsent() {
+			var aData = {
+				consentid: "TESTTESTTEST",
+				lastupdate: 100,
+				vendors: { "ga": true, "fb": false, "adw": false }
+			};
+			var sJson = JSON.stringify(aData);
+
+			//Now write it to the local storage
+			localStorage.setItem("jentis.consent.data", sJson);
+		}
+
+		function MigrateInTimeConsent() {
+			var aData = {
+				consentid: "TESTTESTTEST",
+				lastupdate: Date.now() - 1000,
+				vendors: { "ga": true, "fb": false, "adw": false }
+			};
+			var sJson = JSON.stringify(aData);
+
+			//Now write it to the local storage
+			localStorage.setItem("jentis.consent.data", sJson);
+		}
+
+
+	</script>
+	<style>
+		button {
+			display: block;
+			margin-bottom: 15px;
+			min-width: 200px;
+		}
+	</style>
+
+	<!-- Daniel script -->
+	<script src="./Jentis_Cookiebot.js"></script>
+
+	<!-- Solution #2 (only a example) - callback functions  -->
+	<script type="text/javascript">
 		
-<link rel="stylesheet" href="./Jentis_Consentbar.css">
+		// Cookiebot callback method
+		function CookiebotCallback_OnAccept() {
+			if (Cookiebot.consent.statistics) {
+				enableStatisticsCookies();              
+			}
+		}
 
-    <!-- JENTIS CONSENT ENGINE API - Events -->
-    <script>
-        document.addEventListener('jentis.consent.engine.minimal-consent-given', function (e) {
-            console.log("Minimal Consent is given: %o", e.detail);
-        });
-        document.addEventListener('jentis.consent.engine.no-consent-given', function (e) {
-            console.log("No Consent is given: %o", e.detail);
-        });
-        document.addEventListener('jentis.consent.engine.send-consent-data', function (e) {
-            console.log("SEND Consent to Server: %o", e.detail);
-        });
-        document.addEventListener('jentis.consent.engine.show-bar', function (e) {
-            console.log("Show Bar now: %o", e.detail);
-        });
+		// call by cookiebot callback function
+		function enableStatisticsCookies() 
+		{  
+			console.log("Solution #2 - allow statistic cookies");
+			// do nothing, only a example
+		}
 
-        document.addEventListener('jentis.consent.engine.vendor-change', function (e) {
-            console.log("Vendor Changed: %o", e.detail);
-        });
+	</script>
 
-        document.addEventListener('jentis.consent.engine.vendor-add', function (e) {
-            console.log("Vendor Add: %o", e.detail);
-        });
+	<!-- Solution #2 - Cookiebot event listener -->
+	<script type="text/javascript">
 
-        document.addEventListener('jentis.consent.engine.init', function (e) {
-            console.log("CMP Init: %o", e.detail);
-        });
+		// deny all cookies
+		window.addEventListener('CookiebotOnDecline', function (e) {
+			if (Cookiebot.declined) {
+				console.log("Deny Cookies!");
+				denyAllCookies();
+			}
 
-    </script>
+		}, false);
 
-    <script src="./test_conf.js"></script>
-    <script src="../JentisConsentEngine.js"/></script>
-	
-    <!-- probably hide Jentis consentbar -->
-	<script src="./Jentis_Consentbar.js"/></script>
+		// accept cookies
+		window.addEventListener('CookiebotOnAccept', function (e) {
+			if (Cookiebot.consented) {
+				console.log("Accept Cookies:");
+				acceptCookies(Cookiebot.consent);
+			}
 
-<script>
+		}, false);
 
-        function acceptAll() {
-            jentis.consent.engine.AcceptAll();
-        }
-
-        function acceptGa() {
-            var sConsentId = jentis.consent.engine.setNewVendorConsents({
-                "ga": true,
-                "fb": true
-            });
-        }
-
-        function denyAll() {
-            var sConsentId = jentis.consent.engine.DenyAll();
-        }
-
-        function MigrateOldConsent() {
-            var aData = {
-                consentid: "TESTTESTTEST",
-                lastupdate: 100,
-                vendors: {"ga": true, "fb": false, "adw": false}
-            };
-            var sJson = JSON.stringify(aData);
-
-            //Now write it to the local storage
-            localStorage.setItem("jentis.consent.data", sJson);
-        }
-
-        function MigrateInTimeConsent() {
-            var aData = {
-                consentid: "TESTTESTTEST",
-                lastupdate: Date.now() - 1000,
-                vendors: {"ga": true, "fb": false, "adw": false}
-            };
-            var sJson = JSON.stringify(aData);
-
-            //Now write it to the local storage
-            localStorage.setItem("jentis.consent.data", sJson);
-        }
-
-
-    </script>
-    <style>
-        button {
-            display: block;
-            margin-bottom: 10px; /* 20px; */
-            min-width: 200px;
-        }
-    </style>
+	</script>
 </head>
+
 <body>
-<button onClick="acceptAll();">
-    Accept All
-</button>
-<button onClick="acceptGa();">
-    Accept GA
-</button>
-<button onClick="denyAll();">
-    DENY All
-</button>
-<button onClick="MigrateOldConsent();">
-    Do old consent OUT OF TIME
-</button>
-<button onClick="MigrateInTimeConsent();">
-    Do old consent IN TIME
-</button>
+	<button onClick="acceptAll();">
+		Accept All
+	</button>
+	<button onClick="acceptGa();">
+		Accept GA
+	</button>
+	<button onClick="denyAll();">
+		DENY All
+	</button>
+	<button onClick="MigrateOldConsent();">
+		Do old consent OUT OF TIME
+	</button>
+	<button onClick="MigrateInTimeConsent();">
+		Do old consent IN TIME
+	</button>
 
-<!-- little bit of space -->
-<hr>
-
-<!-- Cookiebot, detailed information - TODO   -->
-<div>
-    <script id="CookieDeclaration" src="https://consent.cookiebot.com/8d826d26-f8f9-4c00-9064-d18117b0bb12/cd.js" type="text/javascript" async></script>
-</div>
+	<!-- little bit of space -->
+	<hr>
+	<button onClick="Cookiebot.renew();">
+		Cookiebot Consent Bar
+	</button>
+	<button onClick="showJentisCosentBar();">
+		Jentis Consent Bar
+	</button>
+	<button onClick="getElementById('cookiebot-detailed-info').style.display = 'block'">
+		Detail Information
+	</button>
+	<hr>
+	<div id="demo"></div>
+	
+	<div id="cookiebot-detailed-info" style="display: none">
+		<!-- Cookiebot, detailed information - TODO   -->
+		<script id="CookieDeclaration" src="https://consent.cookiebot.com/8d826d26-f8f9-4c00-9064-d18117b0bb12/cd.js"
+			type="text/javascript" async></script>
+	</div>
 
 </body>
 </html>
