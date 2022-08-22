@@ -20,28 +20,30 @@ function denyAllCookies()
 function updateConsentData(cookiebot)
 {
 	var consentDataLayer = {};
-	//consentDataLayer.consentid = window.jentis.consent.engine.getConsentId();
-	//consentDataLayer.lastupdate = window.jentis.consent.engine.getLastUpdateTime();
+	consentDataLayer.consentid = window.jentis.consent.engine.getConsentId();
+	consentDataLayer.lastupdate = window.jentis.consent.engine.getLastUpdateTime();
 
 	var vendorData = window.jentis.consent.engine.getVendorFullData();
-
 	for (const key in vendorData) 
 	{
 		let oVendorLoop = vendorData[key];
 
 		if(oVendorLoop.vendor.id == "googleanalytics")
 		{
-			consentDataLayer["ga"] = cookiebot.statistics;
+			consentDataLayer["googleanalytics"] = cookiebot.statistics;
 		}
 		else if(oVendorLoop.vendor.id == "facebook")
 		{
-			consentDataLayer["fa"] = cookiebot.marketing;
+			consentDataLayer["facebook"] = cookiebot.marketing;
 		}
 		else
 		{
 			consentDataLayer[oVendorLoop.vendor.id] = cookiebot.preferences;
 		}
 	}
+	
+
+	console.log("test: ")
 
 	console.log(consentDataLayer);
 	jentis.consent.engine.setNewVendorConsents(consentDataLayer);
