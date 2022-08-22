@@ -107,7 +107,7 @@
 
 	<!-- Solution #2 (only a example) - callback functions  -->
 	<script type="text/javascript">
-		
+
 		// Cookiebot callback method
 		function CookiebotCallback_OnAccept() {
 			if (Cookiebot.consent.statistics) {
@@ -121,12 +121,12 @@
 			console.log("Solution #2 - allow statistic cookies");
 			// do nothing, only a example
 		}
-
+		
 	</script>
 
 	<!-- Solution #2 - Cookiebot event listener -->
 	<script type="text/javascript">
-
+		
 		// deny all cookies
 		window.addEventListener('CookiebotOnDecline', function (e) {
 			if (Cookiebot.declined) {
@@ -139,7 +139,7 @@
 		window.addEventListener('CookiebotOnAccept', function (e) {
 			if (Cookiebot.consented) {
 				console.log("Accept Cookies:");
-				acceptCookies(Cookiebot.consent);
+				updateConsentData(Cookiebot.consent);
 			}
 		}, false);
 
