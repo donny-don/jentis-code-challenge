@@ -21,7 +21,8 @@ function updateConsentData(cookiebot)
 {
 	var consentDataLayer = {};
 	consentDataLayer.consentid = window.jentis.consent.engine.getConsentId();
-	consentDataLayer.lastupdate = window.jentis.consent.engine.getLastUpdateTime();
+	consentDataLayer.lastupdate = Date.now();
+	//consentDataLayer.lastupdate = window.jentis.consent.engine.getLastUpdateTime();
 
 	var vendorData = window.jentis.consent.engine.getVendorFullData();
 	for (const key in vendorData) 
